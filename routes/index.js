@@ -97,4 +97,62 @@ router.post("/payment", function (req, res, next) {
   }
 });
 
+/* () -> creates purchase order in the db */
+router.get("/purchase/", function (req, res, next) {
+  try {
+    var state = req.query.status; // state of payment
+    var PaymentMethod = req.query.status; // PaymentMethod from params
+    var transactionId = req.query.transactionId; // transactionId from params
+
+    /*
+      Store the state of the payment 
+     */
+    if (state === "200") {
+      state = "paid";
+    } else if (state === "1") {
+      state = "cancelled";
+    } else if (state === "400") {
+      state = "failed";
+    }
+    // if state is 400, then payment was failed
+    else if (state === "0") {
+      state = "cancelled";
+    }
+
+    /*
+     Store the type of payment method used
+     */
+    if (PaymentMethod === "cash") {
+      PaymentMethod = "cash";
+    } else if (PaymentMethod === "card") {
+      PaymentMethod = "card";
+    } else if (PaymentMethod === "bank_transfer") {
+      PaymentMethod = "bank_transfer";
+    } else {
+      PaymentMethod = "none";
+    }
+
+    // create a new purchase in the DB
+    var purchase = new Purchases({
+      state,
+      PaymentMethod,
+      transactionId,
+    });
+
+    // save the purchase
+    purchase.save(function (err, purchase) {
+      if (err) {
+        console.log(err);
+        res.status(400).send(err).redirect("http://localhost:3000/");
+      }
+
+      // Redirect to the React app after payment
+      res.status(200).redirect("http://localhost:3000/");
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ errors: error });
+  }
+});
+
 module.exports = router;
