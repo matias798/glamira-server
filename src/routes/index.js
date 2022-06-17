@@ -15,7 +15,7 @@ router.get("/all-products", function (req, res, next) {
 });
 
 // route to get only first 10 products
-router.get("/first-10-products", function (req, res, next) {
+router.get("/first-9-products", function (req, res, next) {
   // Find first 10 products limited moongoose method
   Products.find({})
     .limit(9)
@@ -88,8 +88,7 @@ router.post("/payment", function (req, res, next) {
         },
       })
       .then(function (response) {
-        console.log(response.data);
-        res.send(response.data);
+        res.status(200).json(response.data);
       });
   } catch (error) {
     console.log(error);
