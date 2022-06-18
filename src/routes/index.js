@@ -60,9 +60,9 @@ router.post("/payment", function (req, res, next) {
       ],
 
       customer: {
-        name: "Speryans",
-        identification: "42868541",
-        email: "matiasquiroga584@gmail.com",
+        name: `${req.body.name}`,
+        identification: `${req.body.dni}`,
+        email: `${req.body.email}`,
       },
 
       return_url: "http://localhost:3001/purchase",
