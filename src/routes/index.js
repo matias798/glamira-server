@@ -4,7 +4,7 @@ var axios = require("axios");
 const Products = require("./../Models/Products");
 const Purchases = require("./../Models/Purchases");
 /* GET All Products */
-router.get("/all-products", function (req, res, next) {
+router.get("/products/all", function (req, res, next) {
   Products.find({}, function (err, products) {
     if (err) {
       console.log(err);
@@ -152,6 +152,19 @@ router.get("/purchase/", function (req, res, next) {
     console.log(error);
     res.json({ errors: error });
   }
+});
+
+router.get("/products/:category", function (req, res, next) {
+  // filter %20 to spaces
+  var params = req.params.category.replace(/%20/g, " ");
+
+  Products.find({ category: params }, function (err, products) {
+    if (err) {
+      console.log(err);
+      res.send(err);
+    }
+    res.status(200).json(products);
+  });
 });
 
 module.exports = router;
