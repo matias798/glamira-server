@@ -24,7 +24,7 @@ Search ``` https:localhost:3001/```  on the browser or postman and add the speci
  - Return list of 9 products ```/first-9-products```
  - create a purchase collection in the mongo database```/purchase```
   - Return all products ```/products/all```
-  - Return array from with the specific category ``` /products/:category```
+  - Return array with the specified category in :category ``` /products/:category```
 
 
 **``` POST ```**
