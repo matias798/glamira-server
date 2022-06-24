@@ -11,7 +11,8 @@ Use the package manager (npm) or (yarn) to install.
 
 ## Usage
 
-Run  ``` npm start``` or ``` yarn start``` to start the glamira server on port **3001**.
+Run  ``` npm start``` or ``` yarn start``` to start the glamira server on port 3001.
+Search ``` https:localhost:3001/```  on the browser or postman and add the specific route to get data or dispatch actions.
 
 
 ## APi Endpoints
@@ -25,6 +26,9 @@ Run  ``` npm start``` or ``` yarn start``` to start the glamira server on port *
  - create a purchase collection in the mongo database```/purchase```
 
 **``` POST ```**
+
+
+
 Makes api call to mobbex api ```/payment```
 
 
