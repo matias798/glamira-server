@@ -142,11 +142,11 @@ router.get("/purchase/", function (req, res, next) {
     purchase.save(function (err, purchase) {
       if (err) {
         console.log(err);
-        res.status(400).send(err).redirect("http://localhost:3000/");
+        res.status(400).send(err).redirect("https://glamira-frontend.web.app/");
       }
 
       // Redirect to the React app after payment
-      res.status(200).redirect("http://localhost:3000/");
+      res.status(200).redirect("https://glamira-frontend.web.app/");
     });
   } catch (error) {
     console.log(error);
