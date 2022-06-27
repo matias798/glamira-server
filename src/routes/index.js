@@ -65,8 +65,8 @@ router.post("/payment", function (req, res, next) {
         email: `${req.body.email}`,
       },
 
-      return_url: "http://localhost:3001/purchase",
-      webhook: "http://localhost:880/purchase",
+      return_url: `https://glamira-server.herokuapp.com/purchase`,
+      webhook: `https://glamira-server.herokuapp.com/purchase`,
       reference: "mi_referencia_123",
       options: {
         smsMessage: "We sent you the generated order for your purchase",
