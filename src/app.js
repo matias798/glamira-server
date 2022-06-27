@@ -1,17 +1,25 @@
+const dotenv = require("dotenv");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
 var mongoose = require("mongoose");
+const { ServerApiVersion } = require("mongodb");
 
+//load .env file
+dotenv.config();
+
+// import routes
 var indexRouter = require("./routes/index");
 
+// connect to mongodb
 (async () => {
   try {
-    await mongoose.connect(`mongodb://localhost:27017/Glamira`, {
+    await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverApi: ServerApiVersion.v1,
     });
   } catch (error) {
     console.log(error);
@@ -20,24 +28,21 @@ var indexRouter = require("./routes/index");
 
 var app = express();
 
-const corsOpts = {
-  origin: "*",
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
-};
-
 app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Credentials", true);
+  cors({
+    origin: [
+      "https://www.section.io",
+      "https://www.google.com/",
+      "https://glamira-frontend.web.app",
+    ],
+  });
   next();
 });
-app.use(
-  cors({
-    origin: ["https://www.section.io", "https://www.google.com/"],
-  })
-);
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
