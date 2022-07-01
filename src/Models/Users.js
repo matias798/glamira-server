@@ -17,5 +17,18 @@ const UserSchema = new Schema({
     lowercase: true,
     trim: true,
   },
+  password: {
+    type: String,
+    trim: true,
+  },
+
+  purchases: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Purchase",
+      default: [],
+    },
+  ],
 });
+
 module.exports = mongoose.model("User", UserSchema);
