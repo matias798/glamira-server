@@ -12,6 +12,7 @@ dotenv.config();
 
 // import routes
 var indexRouter = require("./routes/index");
+var userRouter = require("./routes/User");
 
 // connect to mongodb
 (async () => {
@@ -50,5 +51,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/user", userRouter);
 
 module.exports = app;
