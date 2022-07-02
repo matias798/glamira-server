@@ -29,20 +29,7 @@ var userRouter = require("./routes/User");
 
 var app = express();
 
-app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  cors({
-    origin: [
-      "https://www.section.io",
-      "https://www.google.com/",
-      "https://glamira-frontend.web.app",
-    ],
-  });
-  next();
-});
+app.use(cors()); // Newly added
 
 app.use(logger("dev"));
 app.use(express.json());
