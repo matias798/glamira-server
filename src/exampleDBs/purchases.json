@@ -2,47 +2,47 @@
   "_id": {
     "$oid": "62aa763ff4b631195cc5ba34"
   },
-  "PaymentMethod": "cash",
+  "paymentMethod": "cash",
   "state": "paid",
   "transactionId": "nfkvurrux"
 },{
   "_id": {
     "$oid": "62ab476e5681e72068ce5783"
   },
-  "PaymentMethod": "cash",
+  "paymentMethod": "cash",
   "state": "paid",
   "transactionId": "nfkvurrux"
 },{
   "_id": {
     "$oid": "62ab47957c68330625c8753a"
   },
-  "PaymentMethod": "cash",
+  "paymentMethod": "cash",
   "state": "paid",
   "transactionId": "nfkvurrux"
 },{
   "_id": {
     "$oid": "62ab4c5970bd90098f0a881b"
   },
-  "PaymentMethod": "none",
+  "paymentMethod": "none",
   "state": "cancelled",
   "transactionId": "-1"
 },{
   "_id": {
     "$oid": "62ab4cb20400943b5e0184f3"
   },
-  "PaymentMethod": "none",
+  "paymentMethod": "none",
   "state": "cancelled",
   "transactionId": "-1"
 },{
   "_id": {
     "$oid": "62abdb99ae026df7ab576f69"
   },
-  "PaymentMethod": "none",
+  "paymentMethod": "none",
   "transactionId": "-1"
 },{
   "_id": {
     "$oid": "62abdf867f65ece17b530865"
   },
-  "PaymentMethod": "none",
+  "paymentMethod": "none",
   "transactionId": "-1"
 }]
