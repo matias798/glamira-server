@@ -17,7 +17,7 @@ router.post("/register", async (req, res) => {
     // Check if name is already in use
     const userExist = await User.findOne({ name: req.body.userName });
 
-    if (userExist ) {
+    if (userExist) {
       return res.status(200).send("User already exist");
     }
 
@@ -46,20 +46,18 @@ router.post("/register", async (req, res) => {
     // Save user in DB
     await user.save();
 
-      const payload = {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        identification: user.identification,
-        purchases: user.purchases,
-      };
-      const token = jwt.sign(payload, process.env.SECRET_KEY, {
-        expiresIn: "3h",
-      });
-  
-      res.status(200).json({ token });
+    const payload = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      identification: user.identification,
+      purchases: user.purchases,
+    };
+    const token = jwt.sign(payload, process.env.SECRET_KEY, {
+      expiresIn: "3h",
+    });
 
-  
+    res.status(200).json({ token });
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: err.message });
@@ -102,24 +100,36 @@ router.post("/login", async (req, res) => {
 // Route to get orders of a user by id
 router.get("/orders", async (req, res) => {
   let orders = [];
-  let user = await User.findOne({ userName: req.query.user });
 
+  // Decoded user token
+  const decode = jwt.verify(
+    req.header("authorization"),
+    process.env.SECRET_KEY
+  );
+
+  // find user by id
+  let user = await User.findOne({ userName: decode.id });
+
+  // if user !exists -> return error
   if (!user) {
     res.status(400).json({ message: "User not found" });
   }
 
+  // find purchase by id
   const purchase = await Purchase.find({ _id: user.purchases });
 
+  // if !purchase -> return error
   if (!purchase) {
     res.status(400).json({ message: "Purchase not found" });
   }
 
+  // loop all purchases
   for (let i = 0; i < user.purchases.length; i++) {
     let product = await Products.find({ _id: purchase[i].items });
-
     orders.push({ products: product, purchase: purchase[i] });
   }
 
+  // if !orders -> return error
   if (orders.length === 0) {
     res.status(200).json({ message: "No orders yet" });
   }
