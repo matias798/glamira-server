@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PurchaseSchema = new Schema({
-  PaymentMethod: {
+  paymentMethod: {
     type: String,
     trim: true,
     default: null,
@@ -10,7 +10,6 @@ const PurchaseSchema = new Schema({
 
   status: {
     type: String,
-    lowercase: true,
     trim: true,
     default: null,
   },
