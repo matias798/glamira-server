@@ -1,8 +1,14 @@
+// import packages
 var express = require("express");
 var router = express.Router();
-var axios = require("axios");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+
+// import Models
 const Products = require("./../Models/Products");
 const Purchases = require("./../Models/Purchases");
+const User = require("./../Models/Users");
+
 /* GET All Products */
 router.get("/products/all", function (req, res, next) {
   Products.find({}, function (err, products) {
@@ -28,132 +34,6 @@ router.get("/first-9-products", function (req, res, next) {
     });
 });
 
-/* payment method with mobbex */
-router.post("/payment", function (req, res, next) {
-  try {
-    // get currnent day
-    var today = new Date();
-    var day = today.getDate();
-    var month = today.getMonth() + 1; //January is 0!
-    var year = today.getFullYear();
-
-    var data = JSON.stringify({
-      total: req.body.total,
-      test: true,
-      description: "Congratulations! You have successfully paid",
-      due: {
-        day,
-        month,
-        year,
-      },
-      currency: "ARS",
-      secondDue: {
-        days: 10,
-        surcharge: 30,
-      },
-      actions: [
-        {
-          icon: "attachment",
-          title: "Factura",
-          url: "https://speryans.com/mifactura/123",
-        },
-      ],
-
-      customer: {
-        name: `${req.body.name}`,
-        identification: `${req.body.dni}`,
-        email: `${req.body.email}`,
-      },
-
-      return_url: `https://glamira-server.herokuapp.com/purchase`,
-      webhook: `https://glamira-server.herokuapp.com/purchase`,
-      reference: "mi_referencia_123",
-      options: {
-        smsMessage: "We sent you the generated order for your purchase",
-      },
-    });
-
-    axios
-      .post("https://api.mobbex.com/p/checkout", data, {
-        headers: {
-          "x-api-key": "zJ8LFTBX6Ba8D611e9io13fDZAwj0QmKO1Hn1yIj",
-          "x-access-token": "d31f0721-2f85-44e7-bcc6-15e19d1a53cc",
-          "x-lang": "es",
-          "Content-Type": "application/json",
-          "cache-control": "no-cache",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers":
-            "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
-        },
-      })
-      .then(function (response) {
-        res.status(200).json(response.data);
-      });
-  } catch (error) {
-    console.log(error);
-    res.json({ errors: error });
-  }
-});
-
-/* () -> creates purchase order in the db */
-router.get("/purchase/", function (req, res, next) {
-  try {
-    var state = req.query.status; // state of payment
-    var PaymentMethod = req.query.status; // PaymentMethod from params
-    var transactionId = req.query.transactionId; // transactionId from params
-
-    /*
-      Store the state of the payment 
-     */
-    if (state === "200") {
-      state = "paid";
-    } else if (state === "1") {
-      state = "cancelled";
-    } else if (state === "400") {
-      state = "failed";
-    }
-    // if state is 400, then payment was failed
-    else if (state === "0") {
-      state = "cancelled";
-    }
-
-    /*
-     Store the type of payment method used
-     */
-    if (PaymentMethod === "cash") {
-      PaymentMethod = "cash";
-    } else if (PaymentMethod === "card") {
-      PaymentMethod = "card";
-    } else if (PaymentMethod === "bank_transfer") {
-      PaymentMethod = "bank_transfer";
-    } else {
-      PaymentMethod = "none";
-    }
-
-    // create a new purchase in the DB
-    var purchase = new Purchases({
-      state,
-      PaymentMethod,
-      transactionId,
-    });
-
-    // save the purchase
-    purchase.save(function (err, purchase) {
-      if (err) {
-        console.log(err);
-        res.status(400).send(err).redirect("https://glamira-frontend.web.app/");
-      }
-
-      // Redirect to the React app after payment
-      res.status(200).redirect("https://glamira-frontend.web.app/");
-    });
-  } catch (error) {
-    console.log(error);
-    res.json({ errors: error });
-  }
-});
-
 router.get("/products/:category", function (req, res, next) {
   // filter %20 to spaces
   var params = req.params.category.replace(/%20/g, " ");
@@ -165,6 +45,139 @@ router.get("/products/:category", function (req, res, next) {
     }
     res.status(200).json(products);
   });
+});
+/* payment method with mobbex */
+router.post("/payment", async (req, res) => {
+  try {
+    const user = jwt.decode(req.body.UserToken); // Decode JWT
+    let items = req.body.items; // items array that user wants to buy
+    var today = new Date(); //get current date
+
+    // items id
+    let itemsID = await items.map((item) => {
+      return item.id;
+    });
+
+    // create a new Purchase
+    var purchase = new Purchases({
+      items: itemsID,
+      user: user.id,
+    });
+
+    // save the purchase in the db
+    purchase.save(function (err, purchase) {
+      if (err) {
+        console.log(err);
+        res.status(200).json(err);
+      }
+      console.log("Purchase saved successfully");
+    });
+
+    // update user purchases by id in the db
+    User.findByIdAndUpdate(
+      user.id,
+      { $push: { purchases: purchase._id } },
+      { new: true },
+      function (err, user) {
+        if (err) {
+          console.log(err);
+          res.status(200).json(err);
+        }
+        console.log("User purchases updated successfully");
+      }
+    );
+
+    // data to send to mobbex api
+    var data = JSON.stringify({
+      total: req.body.total,
+      test: true,
+      description: "Thank you for supporting us",
+      due: {
+        day: today.getDate(),
+        month: today.getMonth() + 1, //January is 0!,
+        year: today.getFullYear(),
+      },
+      currency: "ARS",
+      secondDue: {
+        days: 10,
+        surcharge: 30,
+      },
+      items: items,
+      customer: {
+        name: `${user.name}`,
+        identification: `${user.identification}`,
+        email: `${user.email}`,
+      },
+      return_url: `${process.env.CLIENT_URL}/user/profile/orders/`,
+      webhook: `${process.env.SERVER_URL}/purchase/`,
+      reference: `${purchase._id}`,
+      options: {
+        smsMessage: "We sent you the generated order for your purchase",
+      },
+    });
+
+    axios
+      .post("https://api.mobbex.com/p/checkout", data, {
+        headers: {
+          "x-api-key": `${process.env.MOBBEX_API_KEY}`,
+          "x-access-token": `${process.env.MOBBEX_ACCES_TOKEN}`,
+          "x-lang": "es",
+          "Content-Type": "application/json",
+          "cache-control": "no-cache",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers":
+            "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With",
+        },
+      })
+
+      .then(function (response) {
+        console.log(response.data.data.url);
+        res.status(200).json(response.data.data.url);
+      });
+  } catch (error) {
+    res.json({ errors: error });
+  }
+});
+
+router.post("/purchase", function (req, res, next) {
+  try {
+    console.log("llego 1");
+    console.log(req.body);
+    // variables
+    const Data = req.body.data;
+    console.log(Data);
+    let reference = Data.payment.reference;
+    let status = Data.payment.status.text;
+    let transactionId = Data.checkout.uid;
+    let paymentMethod = Data.source.type;
+    let total = Data.payment.total;
+    total = parseFloat(total); // string to number
+
+    // Edit purchase by id
+    Purchases.findByIdAndUpdate(
+      reference,
+      {
+        $set: {
+          status: status,
+          paymentMethod,
+          total,
+          transactionId,
+        },
+      },
+      { new: true },
+      function (err, purchase) {
+        if (err) {
+          console.log(err);
+          res.send(err);
+        }
+        res.status(200).json(purchase);
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    res.json({ errors: error });
+  }
 });
 
 module.exports = router;
