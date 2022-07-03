@@ -66,7 +66,6 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-
     // Check if user exist
     const user = await User.findOne({ name: req.body.userName });
 
@@ -102,7 +101,7 @@ router.post("/login", async (req, res) => {
       const token = jwt.sign(payload, process.env.SECRET_KEY, {
         expiresIn: "3h",
       });
-      
+
       res.status(200).json(token);
     }
   } catch (err) {
@@ -113,8 +112,9 @@ router.post("/login", async (req, res) => {
 
 // Route to get orders of a user by id
 router.get("/orders", async (req, res) => {
+try{
+  // todo add try and catch
   let orders = [];
-
   // Decoded user token
   const decode = jwt.verify(
     req.header("authorization"),
@@ -122,7 +122,7 @@ router.get("/orders", async (req, res) => {
   );
 
   // find user by id
-  let user = await User.findOne({ userName: decode.id });
+  let user = await User.findById(decode.id);
 
   // if user !exists -> return error
   if (!user) {
@@ -148,7 +148,14 @@ router.get("/orders", async (req, res) => {
     res.status(200).json({ message: "No orders yet" });
   }
 
+  console.log(orders);
   res.status(200).json(orders);
+}
+ catch (err) {
+  console.log(err);
+  res.status(400).json({ message: err.message });
+}
+
 });
 
 module.exports = router;
