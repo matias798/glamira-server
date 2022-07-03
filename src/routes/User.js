@@ -65,35 +65,49 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const user = await User.findOne({ username: req.body.userName });
+  try {
 
-  const isMatch = await bcrypt.compareSync(
-    req.body.password,
-    user.password,
-    function (err, result) {
-      if (err) {
-        return console.log(err);
+    // Check if user exist
+    const user = await User.findOne({ name: req.body.userName });
+
+    // Check if password is correct
+    const isMatch = await bcrypt.compareSync(
+      req.body.password,
+      user.password,
+      function (err, result) {
+        if (err) {
+          console.log(err);
+          return res.status(400).json({ message: err.message });
+        }
+        return result;
       }
-      return result;
+    );
+
+    // if password is wrong -> return error
+    if (!isMatch) {
+      res.status(401).json({ message: "Invalid Credentials" });
     }
-  );
 
-  if (isMatch) {
-    const payload = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      identification: user.identification,
-      purchases: user.purchases,
-    };
+    // pasword matches
+    if (isMatch) {
+      const payload = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        identification: user.identification,
+        purchases: user.purchases,
+      };
 
-    const token = jwt.sign(payload, process.env.SECRET_KEY, {
-      expiresIn: "3h",
-    });
-
-    res.status(200).json({ token });
-  } else {
-    res.status(401).json({ message: "Invalid Credentials" });
+      // create token
+      const token = jwt.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: "3h",
+      });
+      
+      res.status(200).json(token);
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: err.message });
   }
 });
 
